@@ -2,19 +2,30 @@
 #This program is a parse tree for .JACK files
 main()
 
-def ParseTree(categories):
+def ParseTree(categories, symbols):
     #Start XML 
     outputFile.write("<token> \n")
-    for char in file:
-        
+    for i in file:
+        for j in symbols:
+            if file[i] == symbols[j]:
+                parseSymbol(file[i])
+            
+                
+            
+            
     outputFile.write("</token> \n")
+    
+    
+    
+    def parseSymbol(symbol):
+        
         
     
 def main():
     #define Tokens
-    categories = ['()[]{},;=.+=*/&|~<>', 'class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
-                  'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this', \
-                 'abcdefghijklmnopqrstuvwxyz', 'ABCDEFGHIJKLMNOPQRSTUVWXYZ', '0123456789', '_']
+    symbols = ['}', '{', ')', '(', ']', '[', '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~']
+    keywords = ['class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
+                  'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']
     #Open File(s)
     outputFile= "MainT.xml"
     filename= "example.JACK"
@@ -22,7 +33,7 @@ def main():
     file= open(filename, 'r')
     
     #Parse it up!
-    ParseTree(categories)
+    ParseTree(categories, symbols)
 
 
         
