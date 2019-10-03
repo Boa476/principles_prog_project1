@@ -83,12 +83,18 @@ class JackTokenizer:
         else:
             return False                                 
     
-    def advance(i):
+    def advance(self, i):
         index = i
         if '/' in self.words[i]:
             if self.words[i+1] == '/':
                 while self.words[i] != '\n':
                     i + 1
+        if '/' in self.words[i]:
+            if self.words[i+1] == '*':
+                while self.words[i] != '*':
+                    if self.words[i+1] == '/':
+                        i + 1
+        
         
         return i + length
 
