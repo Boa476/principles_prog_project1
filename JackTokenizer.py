@@ -12,10 +12,13 @@ class JackTokenizer:
         self.symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~', '{', '(', '[', ']', ')', '}', ';']
         self.keywords = ['class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
                     'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']
-        self.Tokens =[]
-        comment = False
-        self.sym = False
+        self.words = self.file.readlines.split()
+        self.tokens = []
+        self.index = 0
+        #comment = False
+        #self.sym = False
         
+        """
         #Preparing Tokens
         with open(self.filename) as f:
             for line in f:
@@ -71,17 +74,23 @@ class JackTokenizer:
                     if self.sym == False:                        
                         self.Tokens.append(word)
                     index + 1
-        
+        """
     
 
     def hasMoreTokens(self, i):
-        if self.Tokens[i + 1] == None:
-            return False
+        if '}' in self.words[i, len(self.words)]:
+            return True
         else:
-            return True                                 
+            return False                                 
     
-    def advance(self, i):
-        return i + 1
+    def advance(i):
+        index = i
+        if '/' in self.words[i]:
+            if self.words[i+1] == '/':
+                while self.words[i] != '\n':
+                    i + 1
+        
+        return i + length
 
     """
     def tokenType(self, token):
@@ -89,15 +98,15 @@ class JackTokenizer:
           
         
         
-    def keyWord():
+    def keyWord(self, token):
         
-    def symbol():
+    def symbol(self, token):
         
-    def identifier():
+    def identifier(self, token):
         
-    def intVal():
+    def intVal(self, token):
 
-    def stringVal():
+    def stringVal(self, token):
 
 """
 a =JackTokenizer('Main')
@@ -107,7 +116,7 @@ while more is True:
     
     more = a.hasMoreTokens(i)
     if more is True:
-        i = a.advance(i)
+        i = a.advance(i, length)
     
 
     
