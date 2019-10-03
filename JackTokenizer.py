@@ -8,51 +8,86 @@ class JackTokenizer:
         self.filename= filename + ".jack"
         self.oFile= open(self.outputFile, 'w')
         self.file= open(self.filename, 'r')
-        #define Tokens
-        self.symbols = [ '.', ',', ';', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~', '{', '(', '[', ']', ')', '}']
+        #define Tokens-- Tokens are checked in this order for a particular reason, particularly the ';' being at the end of array
+        self.symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~', '{', '(', '[', ']', ')', '}', ';']
         self.keywords = ['class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
                     'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']
         self.Tokens =[]
+        comment = False
+        self.sym = False
         
         #Preparing Tokens
-        comment = False
         with open(self.filename) as f:
             for line in f:
-                for word in line.split():
+                lineArr = line.split()
+                index = 0
+                ### 'word' is the same as 'i'
+                for word in lineArr: #.split() by default separates string pieces by white space
+                    ### Check for comment status and ignore lines if True
                     if comment == True:
                         if '*/' not in line:
                             break
                         if '*/' in line:
                             comment = False
                             break
-                    if '//' in word:
+                    #More Comment Checking   
+                    elif '//' in word:
+                        self.sym = True
                         break
-                    if '/*' in word:
+                    #More Comment Checking
+                    elif '/*' in word:
                         comment = True
                         if '*/' not in line:
+                            self.sym = True
                             break
                     if comment == False:
-                        done = False
-                        while(done == False):
-                            for i in self.symbols:
-                                if i in word:
-                                    elem = word.split(i, 1)
-                                    self.Tokens.append(elem[0])
-                                    self.Tokens.append(i)
-                                    word = elem[1]
-                                    if elem[1] == '':
-                                        done = True
-                            self.Tokens.append(word)
+                        #Checks for Symbols in the file and attmepts to separate them from other words. i.e. call.function()
+                        for i in self.symbols:
+                            self.sym = False
+                            if i == word:
+                                self.sym = True
+                                self.Tokens.append(word)
+                                break
+                            if i in word:
+                                ### Attempt to separate chains. See example above
+                                elem = word.split(i, 1)
+                                self.Tokens.append(elem[0]) #adds token to array
+                                self.Tokens.append(i) #adds symbol to array
+                                word = elem[1] #replaces word with remainder of word
+                                if word == '':
+                                    self.sym = True
+                                    break
+                    if '"' in word:
+                        qInd= index
+                        qInd + 1
+                        while lineArr[qInd] != '"':
+                            word = word + ' ' + lineArr[qInd]
+                        qInd + 1
+                        word = word + lineArr[qInd]
+                        self.Tokens.append(word)
+                        self.sym = True
+                            
+                    #if all else fails, it's a token :)
+                    if self.sym == False:                        
+                        self.Tokens.append(word)
+                    index + 1
         
     
 
+    def hasMoreTokens(self, i):
+        if self.Tokens[i + 1] == None:
+            return False
+        else:
+            return True                                 
+    
+    def advance(self, i):
+        return i + 1
+
     """
+    def tokenType(self, token):
+    
           
-    def hasMoreTokens():
         
-    def advance():
-        
-    def tokenType():
         
     def keyWord():
         
@@ -66,5 +101,13 @@ class JackTokenizer:
 
 """
 a =JackTokenizer('Main')
-for i in a.Tokens:
-    print(a.Tokens[i])
+i = 0
+more = True
+while more is True:
+    
+    more = a.hasMoreTokens(i)
+    if more is True:
+        i = a.advance(i)
+    
+
+    
