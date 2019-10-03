@@ -8,17 +8,68 @@ class JackTokenizer:
         rawList= self.__openFile__(filename)
         self.toTokenize = self.__arrangeFile__(rawList)
         
-        outputFile =  + "T.xml"
-        self.oFile= open(self.outputFile, 'w')
+        #outputFile =  + "T.xml"
+        #self.oFile= open(self.outputFile, 'w')
         #define Tokens-- Tokens are checked in this order for a particular reason, particularly the ';' being at the end of array
         self.symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~', '{', '(', '[', ']', ')', '}', ';']
         self.keywords = ['class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
                     'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']
-        self.string= self.file.readlines()
-        self.tokens = []
-        self.index = 0
+        #self.string= self.file.readlines()
+        #self.tokens = []
+        #self.index = 0
         #comment = False
         #self.sym = False
+        
+####### Loading and preparing files  ########
+        
+    def __openFile__ (self, filename):
+        """ Opens a file and places it into a list """
+        fileList = []
+        file = open(filename, 'r')
+        for line in file:
+            fileList.append(line)    
+        file.close()
+        return fileList
+    
+    def __arrangeFile__(self, unchangedList):
+        """Removes Comments, blanks, and whitespace from the list"""
+        finishedList=[]
+        
+        for line in unchangedList:
+            #remove blank spaces on sides
+            line = line.strip()
+            #remove comments
+            line = self.__removeLineComments__(line)
+                
+            if len(line) > 0:
+                finishedList.append(line)
+    
+        return finishedList
+    
+    def __removeBlockComments__(self, line):  
+        output = ''
+        #finds start of comment
+        if line[0] == "/" and line[1] == "*":
+            if len(line) > 3:
+                #finds the end of the comment
+                for i in range(3, len(line)):
+                    if line[i] == "*" and line[i + 1] == "/":
+                        output += (line[i+2:])
+            return output
+        #removes lines from comment
+        elif line[0] == "*":
+            return output
+        #no comment found
+        else:
+            output = line
+            return output
+    
+    def __removeLineComments__(self, line):
+        i = line.find('//')
+        if i >=0:
+            line = line[0:i]
+        line = line.strip()
+        return line
         
         """
         #Preparing Tokens
@@ -79,6 +130,7 @@ class JackTokenizer:
         """
     
 
+"""
     def hasMoreTokens(self, i):
         if '}' in self.string[i, len(self.string)]:
             return True
@@ -99,7 +151,6 @@ class JackTokenizer:
         
         return token
 
-    """
     def tokenType(self, token):
     
           
@@ -118,60 +169,6 @@ class JackTokenizer:
 """
     
 
-####### Loading and preparing files  ########
-        
-def __openFile__ (self, filename):
-    """ Opens a file and places it into a list """
-    fileList = []
-    file = open(filename, 'r')
-    for line in file:
-        fileList.append(line)    
-    file.close()
-    return fileList
 
-def __arrangeFile__(self, unchangedList):
-    """Removes Comments, blanks, and whitespace from the list"""
-    finishedList=[]
-    
-    for line in unchangedList:
-        #remove blank spaces on sides
-        line = line.strip()
-        #remove comments
-        line = self.__removeLineComments__(line)
-            
-        if len(line) > 0:
-            finishedList.append(line)
-
-    return finishedList
-
-def __removeBlockComments__(self, line):
-    output = ''
-    if line[0] == "/" and line[1] == "*":
-        if len(line) > 3:
-            for i in range(3, len(line)):
-                if line[i] == "*" and line[i + 1] == "/":
-                    output += (line[i+2:])
-        return output
-    elif line[0] == "*":
-        return output
-    
-    else:
-        output = line
-        return output
-
-def __removeLineComments__(line):
-    i = line.find('//')
-    if i >=0:
-        line = line[0:i]
-    line = line.strip()
-    return line
-
-    
-a =JackTokenizer('Main')
-i = 0
-more = True
-while more is True:
-    
-    more = a.hasMoreTokens(i)
-    if more is True:
-        i = a.advance(i, length)
+a = JackTokenizer('Main')
+print(a.toTokenize)
