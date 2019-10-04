@@ -7,11 +7,12 @@ class JackTokenizer:
         filename= filename + ".jack"
         rawList= self.__openFile__(filename)
         self.toTokenize = self.__arrangeFile__(rawList)
+        self.Tokens = self.__compileTokens__(self.toTokenize)
+        
         
         #outputFile =  + "T.xml"
         #self.oFile= open(self.outputFile, 'w')
         #define Tokens-- Tokens are checked in this order for a particular reason, particularly the ';' being at the end of array
-        self.symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~', '{', '(', '[', ']', ')', '}', ';']
         self.keywords = ['class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
                     'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']
         #self.string= self.file.readlines()
@@ -38,8 +39,17 @@ class JackTokenizer:
         for line in unchangedList:
             #remove blank spaces on sides
             line = line.strip()
+            
             #remove comments
             line = self.__removeLineComments__(line)
+            if line == '':
+                continue
+            line = self.__removeBlockComments__(line)
+            if line == '':
+                continue
+                
+            ##separate symbols from words/strings
+            line = self.__addSpaces__(line)
                 
             if len(line) > 0:
                 finishedList.append(line)
@@ -49,7 +59,7 @@ class JackTokenizer:
     def __removeBlockComments__(self, line):  
         output = ''
         #finds start of comment
-        if line[0] == "/" and line[1] == "*":
+        if line[0] == "/" and line[1]== "*":
             if len(line) > 3:
                 #finds the end of the comment
                 for i in range(3, len(line)):
@@ -66,10 +76,58 @@ class JackTokenizer:
     
     def __removeLineComments__(self, line):
         i = line.find('//')
-        if i >=0:
+        if i >0:
             line = line[0:i]
-        line = line.strip()
+        elif i == 0:
+            line = ''
         return line
+    
+    def __addSpaces__(self, line):
+        symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~',\
+                   '{', '(', '[', ']', ')', '}', ';']
+        #selects symbol to check for
+        for i in symbols:
+            searched = False
+            j = line.find(i)
+            if j < 0:
+                searched = True
+            else:
+                # Insert space before and after symbol
+                temp = list(line)
+                temp.insert(j+1, " ")
+                temp.insert(j, " ")
+                line = ''.join(temp)
+            while searched == False:
+                j = line.find(i, j + 2) #finds index of symbol in line
+                if j < 0:
+                    break
+                else:
+                    temp = list(line)
+                    temp.insert(j+1, " ")
+                    temp.insert(j, " ")
+                    line = ''.join(temp)
+        return line
+    
+    def __compileTokens__(self, toTokenize):
+        tokens = []
+        switch = False
+        for line in toTokenize:
+            j = line.find('"')
+            if j > 0:
+                k = line.find('"', j + 1)
+                temp = line[j+1:k]
+            for word in line.split():
+                if switch == False and '"' not in word:
+                    tokens.append(word)
+                if '"' in word and switch == True:
+                    switch = False
+                    continue
+                if '"' in word:
+                    tokens.append(temp)
+                    switch = True
+                    continue
+        return tokens
+                    
         
         """
         #Preparing Tokens
@@ -172,3 +230,4 @@ class JackTokenizer:
 
 a = JackTokenizer('Main')
 print(a.toTokenize)
+print(a.Tokens)
