@@ -3,31 +3,55 @@
 class JackTokenizer:
     
     def __init__(self, filename):
-        #Open File and fix it for tokenizing
-        filename= filename + ".jack"
-        rawList= self.__openFile__(filename)
-        self.toTokenize = self.__arrangeFile__(rawList)
-        self.Tokens = self.__compileTokens__(self.toTokenize)
-        
-        
-        #outputFile =  + "T.xml"
-        #self.oFile= open(self.outputFile, 'w')
-        #define Tokens-- Tokens are checked in this order for a particular reason, particularly the ';' being at the end of array
+        self.root = filename
         self.keywords = ['class', 'constructor', 'method', 'function', 'int', 'boolean', 'char', 'void', \
-                    'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']
-        #self.string= self.file.readlines()
-        #self.tokens = []
-        #self.index = 0
-        #comment = False
-        #self.sym = False
+                    'var', 'static', 'field', 'let', 'do', 'if', 'else', 'while', 'return', 'true', 'false', 'null', 'this']                         
+        self.symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~',\
+                   '{', '(', '[', ']', ')', '}', ';']
+        self.ctr= 0
+        filename= filename + ".jack"
+        self.rawList= self.__openFile__(filename) #file prep
+        self.toTokenize = self.__arrangeFile__(self.rawList)#file prep
+        self.tokens = self.__compileTokens__(self.toTokenize)#file prep done!
+        
+######### class methods ###########        
+    def hasMoreTokens(self):
+        """ Checks to see if the current token is the last one in the array"""
+        if self.ctr + 1 >= len(self.tokens):
+            return False
+        else:
+            return True
+        
+    def advance(self):
+        """self.ctr += 1"""
+        self.ctr += 1
+    
+    def tokenType(self):
+        """ Determines type of given token"""
+        if self.tokens[self.ctr] in self.symbols:
+            return 'symbol'
+        elif self.tokens[self.ctr].isdigit():
+            return 'integerConstant'
+        elif self.tokens[self.ctr] in self.keywords:
+            return 'keyword'
+        elif self.tokens[self.ctr] not in self.keywords:
+            for line in self.rawList:
+                if line.find('"' + self.tokens[self.ctr] + '"') > 0:
+                    return 'stringConstant'
+            return 'identifier'
+        
+    def getToken(self):
+        """returns the current token"""
+        return self.token[self.ctr]   
         
 ####### Loading and preparing files  ########
         
     def __openFile__ (self, filename):
         """ Opens a file and places it into a list """
         fileList = []
+        #open. the. file.
         file = open(filename, 'r')
-        for line in file:
+        for line in file: #inserts all lines into a list
             fileList.append(line)    
         file.close()
         return fileList
@@ -56,7 +80,8 @@ class JackTokenizer:
     
         return finishedList
     
-    def __removeBlockComments__(self, line):  
+    def __removeBlockComments__(self, line):
+        """ Removes single line block comment """
         output = ''
         #finds start of comment
         if line[0] == "/" and line[1]== "*":
@@ -75,7 +100,8 @@ class JackTokenizer:
             return output
     
     def __removeLineComments__(self, line):
-        i = line.find('//')
+        """Removes single line comments"""
+        i = line.find('//') #find comment 
         if i >0:
             line = line[0:i]
         elif i == 0:
@@ -83,10 +109,9 @@ class JackTokenizer:
         return line
     
     def __addSpaces__(self, line):
-        symbols = [ '.', ',', '+', '-', '*', '/', '&', '|', '<', '>', '=', '~',\
-                   '{', '(', '[', ']', ')', '}', ';']
+        """ Adds a space before and after all symbols in the string"""
         #selects symbol to check for
-        for i in symbols:
+        for i in self.symbols:
             searched = False
             j = line.find(i)
             if j < 0:
@@ -109,14 +134,16 @@ class JackTokenizer:
         return line
     
     def __compileTokens__(self, toTokenize):
+        """Formats all tokens into a single array"""
         tokens = []
         switch = False
         for line in toTokenize:
-            j = line.find('"')
+            j = line.find('"')#if line has a string literal
             if j > 0:
-                k = line.find('"', j + 1)
+                k = line.find('"', j + 1)#find end of literal
                 temp = line[j+1:k]
             for word in line.split():
+                #ignore string literals and append tokens
                 if switch == False and '"' not in word:
                     tokens.append(word)
                 if '"' in word and switch == True:
@@ -127,107 +154,39 @@ class JackTokenizer:
                     switch = True
                     continue
         return tokens
-                    
+#### End Class JackTokenizer ####
         
-        """
-        #Preparing Tokens
-        with open(self.filename) as f:
-            for line in f:
-                lineArr = line.split()
-                index = 0
-                ### 'word' is the same as 'i'
-                for word in lineArr: #.split() by default separates string pieces by white space
-                    ### Check for comment status and ignore lines if True
-                    if comment == True:
-                        if '*/' not in line:
-                            break
-                        if '*/' in line:
-                            comment = False
-                            break
-                    #More Comment Checking   
-                    elif '//' in word:
-                        self.sym = True
-                        break
-                    #More Comment Checking
-                    elif '/*' in word:
-                        comment = True
-                        if '*/' not in line:
-                            self.sym = True
-                            break
-                    if comment == False:
-                        #Checks for Symbols in the file and attmepts to separate them from other words. i.e. call.function()
-                        for i in self.symbols:
-                            self.sym = False
-                            if i == word:
-                                self.sym = True
-                                self.Tokens.append(word)
-                                break
-                            if i in word:
-                                ### Attempt to separate chains. See example above
-                                elem = word.split(i, 1)
-                                self.Tokens.append(elem[0]) #adds token to array
-                                self.Tokens.append(i) #adds symbol to array
-                                word = elem[1] #replaces word with remainder of word
-                                if word == '':
-                                    self.sym = True
-                                    break
-                    if '"' in word:
-                        qInd= index
-                        qInd + 1
-                        while lineArr[qInd] != '"':
-                            word = word + ' ' + lineArr[qInd]
-                        qInd + 1
-                        word = word + lineArr[qInd]
-                        self.Tokens.append(word)
-                        self.sym = True
-                            
-                    #if all else fails, it's a token :)
-                    if self.sym == False:                        
-                        self.Tokens.append(word)
-                    index + 1
-        """
     
-
-"""
-    def hasMoreTokens(self, i):
-        if '}' in self.string[i, len(self.string)]:
-            return True
-        else:
-            return False                                 
+def main():
+    name = input('Enter the name of the Jack file to be tokenized (omit ".jack" ext): ')
     
-    def advance(self, line):
-        index = i
-        if '/' in self.line[index] and self.line[index+1] == '/':
-           return None
-        if '/' in self.line[index]:
-            if self.line[index+1] == '*':
-                    if self.words[index+1] == '/':
-                        index + 1
-                    else:
-                        i + 1
-        i + 1
-        
-        return token
-
-    def tokenType(self, token):
+    a = JackTokenizer(name)
+    check = True
+    output = []
+    #create output file and initialize it
+    outputFile = a.root + "T.xml"
+    file = open(outputFile, 'w')
+    output.append('<tokens>\n')
     
-          
+    while check == True:
+        ## insert Token into .xml
+        if a.ctr == 0: #condition for first Token
+            tType = a.tokenType()
+            output.append('<' + tType + '> ' + a.tokens[a.ctr] + ' </' + tType + '>\n')
+            a.advance()
+            print(a.tokens[a.ctr])
+        else: #all other "not first" Tokens
+            tType = a.tokenType()
+            output.append('<' + tType + '> ' + a.tokens[a.ctr] + ' </' + tType + '>\n')
+            if a.hasMoreTokens():
+                a.advance()
+                print(a.tokens[a.ctr])
+            else:
+                check = False
         
-        
-    def keyWord(self, token):
-        
-    def symbol(self, token):
-        
-    def identifier(self, token):
-        
-    def intVal(self, token):
+    output.append('</tokens>')
+    for i in output:
+        file.write(i)
+    file.close()
 
-    def stringVal(self, token):
-
-"""
-    
-
-
-a = JackTokenizer('Main')
-print(a.toTokenize)
-print(a.Tokens)
+main()                    
